@@ -1,0 +1,23 @@
+#!/bin/bash
+
+##############################################################################
+#
+# Authors: Fabio Pucci
+# CopyPolicy: Released under the terms of the LGPLv2.1 or any later version
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details
+#
+##############################################################################
+
+while :
+do
+	TODAY=`date +%Y%m%d`
+	tail -n 20 /windows/log-nolink/$TODAY
+	sleep 1
+done
+
+
+
