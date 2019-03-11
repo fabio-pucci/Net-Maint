@@ -1,0 +1,116 @@
+#!/bin/bash
+
+##############################################################################
+#
+# Authors: Fabio Pucci
+# CopyPolicy: Released under the terms of the LGPLv2.1 or any later version
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details
+#
+##############################################################################
+
+TOT=0
+SOUND=/windows/suoni
+IPCARE=IP-LINK.txt
+VER=1.3
+
+echo
+echo "################################"
+echo "# test-ip in running...        #"
+echo "################################"
+
+echo >> /windows/log-noip/`date +%Y%m%d`
+echo "###############################" >> /windows/log-noip/`date +%Y%m%d`
+echo "# `date +%H:%M:%S` - Starting test-ip #" >> /windows/log-noip/`date +%Y%m%d`
+echo "###############################" >> /windows/log-noip/`date +%Y%m%d`
+
+while :
+do
+
+	failed=0
+	
+	for i in `ls /windows/IP*txt`
+	do
+		echo "Attualmente sotto test il file $i"
+
+#		read
+
+		count=0
+		line=0
+		unset AIP
+		unset AHOST
+	
+		line=`cat $i | grep -v "#" | wc -l`
+#		echo line=$line
+
+#		cat $i | grep -v "#" | awk '{ print $1 }'
+#		cat $i | grep -v "#" | awk '{ print $2 }'
+
+		AIP=(`cat $i | grep -v "#" | awk '{ print $1 }'`)
+		AHOST=(`cat $i | grep -v "#" | awk '{ print $2 }'`)
+
+		while (( $line > 0 ))
+		do
+			sleep 1
+#			read
+			echo "ping -c1 ${AIP[$count]}"
+#			ping -c1 ${AIP[$count]}
+			ping -c1 ${AIP[$count]}	1>/dev/null
+			
+			if [[ $? != 0 ]]
+			then
+
+				echo "ping -c3 ${AIP[$count]}"
+				ping -c3 ${AIP[$count]} 1>/dev/null
+				
+				if [[ $? != 0 ]]
+				then
+
+					failed=$(($failed+1))
+					echo "`date +%H:%M:%S` - ${AIP[$count]} (${AHOST[$count]}) non raggiungibile"
+					echo "`date +%H:%M:%S` - ${AIP[$count]} (${AHOST[$count]}) non raggiungibile" >> /windows/log-noip/`date +%Y%m%d`
+	
+					play $SOUND/beep4.wav
+
+					grep ${AIP[$count]} /windows/$IPCARE
+
+					if [[ $? == 0 ]]
+					then
+
+						play $SOUND/polizia.wav
+						
+					fi
+				fi
+							
+			fi
+
+			count=$(($count+1))
+#			echo count=$count
+			line=$(($line-1))
+#			echo line=$line
+#			read
+		
+		done
+
+	done
+
+	TOT=$(($TOT+1))
+
+	echo
+	echo "Tutti gli IP presenti nei file:"
+	echo
+	ls /windows/IP*txt
+	echo	
+	echo "sono stati testati N. $TOT volte"
+	echo "trovando N. $failed IP non raggiungibili nell'ultimo ciclo"
+	
+	echo "`date +%H:%M:%S` - tutti gli IP sono stati testati N. $TOT volte consecutivamente trovando N. $failed IP non raggiungibili nell'ultimo ciclo" >> /windows/log-noip/`date +%Y%m%d`
+	echo "`date` - fine ciclo" >> /windows/log-noip/`date +%Y%m%d`
+	
+	sleep 5
+		
+done
+	
