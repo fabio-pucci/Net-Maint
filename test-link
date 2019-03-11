@@ -1,0 +1,341 @@
+#!/bin/bash
+
+##############################################################################
+#
+# Authors: Fabio Pucci
+# CopyPolicy: Released under the terms of the LGPLv2.1 or any later version
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details
+#
+##############################################################################
+
+TOT=0
+NOWWW=0
+NOHTTPS=0
+unset AFAIL
+SCRIPT=/windows/script
+SOUND=/windows/suoni
+VERSION=2.2
+
+send_linkdown ()
+{
+	echo "Questa email viene recapitata in modo automatico dalla postazione linux che testa i link principali della Laziale." >> $SCRIPT/email-linkdown.tmp
+	echo "Il vostro indirizzo e' presente nello script /windows/script/test-link che e' in esecuzione sulla stessa macchina Linux." >> $SCRIPT/email-linkdown.tmp
+	echo "" >> $SCRIPT/email-linkdown.tmp
+	echo "Da questo test e' risultato che in data:" >> $SCRIPT/email-linkdown.tmp
+	echo "" >> $SCRIPT/email-linkdown.tmp
+	echo "`date`" >> $SCRIPT/email-linkdown.tmp
+	echo "" >> $SCRIPT/email-linkdown.tmp
+	echo "l'IP: ${AIP[$COUNT]}" >> $SCRIPT/email-linkdown.tmp
+	echo "" >> $SCRIPT/email-linkdown.tmp
+	echo "non e' stato piu' raggiungibile" >> $SCRIPT/email-linkdown.tmp
+	echo "" >> $SCRIPT/email-linkdown.tmp
+	echo "Verificate dunque questa cosa." >> $SCRIPT/email-linkdown.tmp
+	echo "" >> $SCRIPT/email-linkdown.tmp
+	echo "" >> $SCRIPT/email-linkdown.tmp
+	echo "Grazie" >> $SCRIPT/email-linkdown.tmp
+	mail -s "LINK DOWN - ${AIP[$COUNT]} (${AHOST[$COUNT]}) non raggiungibile" email1@domain-test.it < $SCRIPT/email-linkdown.tmp
+	mail -s "LINK DOWN - ${AIP[$COUNT]} (${AHOST[$COUNT]}) non raggiungibile" email2@domain-test.it < $SCRIPT/email-linkdown.tmp
+	mail -s "LINK DOWN - ${AIP[$COUNT]} (${AHOST[$COUNT]}) non raggiungibile" email3@domain-test.it < $SCRIPT/email-linkdown.tmp
+	rm $SCRIPT/email-linkdown.tmp
+}
+
+send_linkup ()
+{
+	echo "Questa email viene recapitata in modo automatico dalla postazione linux che testa i link principali della Laziale." >> $SCRIPT/email-linkup.tmp
+	echo "Il vostro indirizzo e' presente nello script /windows/script/test-link che e' in esecuzione sulla stessa macchina Linux." >> $SCRIPT/email-linkup.tmp
+	echo "" >> $SCRIPT/email-linkup.tmp
+	echo "Da questo test e' risultato che in data:" >> $SCRIPT/email-linkup.tmp
+	echo "" >> $SCRIPT/email-linkup.tmp
+	echo "`date`" >> $SCRIPT/email-linkup.tmp
+	echo "" >> $SCRIPT/email-linkup.tmp
+	echo "l'IP: ${AIP[$COUNT]}" >> $SCRIPT/email-linkup.tmp
+	echo "" >> $SCRIPT/email-linkup.tmp
+	echo "e' tornato di nuovo raggiungibile" >> $SCRIPT/email-linkup.tmp
+	echo "" >> $SCRIPT/email-linkup.tmp
+	echo "Verificate dunque che e' di nuovo tutto OK." >> $SCRIPT/email-linkup.tmp
+	echo "" >> $SCRIPT/email-linkup.tmp
+	echo "" >> $SCRIPT/email-linkup.tmp
+	echo "Grazie" >> $SCRIPT/email-linkup.tmp
+	mail -s "LINK UP - ${AIP[$COUNT]} (${AHOST[$COUNT]}) e' tornato raggiungibile" email1@domain-test.it < $SCRIPT/email-linkup.tmp
+	mail -s "LINK UP - ${AIP[$COUNT]} (${AHOST[$COUNT]}) e' tornato raggiungibile" email2@domain-test.it < $SCRIPT/email-linkup.tmp
+	mail -s "LINK UP - ${AIP[$COUNT]} (${AHOST[$COUNT]}) e' tornato raggiungibile" email3@domain-test.it < $SCRIPT/email-linkup.tmp
+	rm $SCRIPT/email-linkup.tmp
+}
+
+send_wwwdown ()
+{
+	echo "Questa email viene recapitata in modo automatico dalla postazione linux che testa i link principali della Laziale." >> $SCRIPT/email-wwwdown.tmp
+	echo "Il vostro indirizzo e' presente nello script /windows/script/test-link che e' in esecuzione sulla stessa macchina Linux." >> $SCRIPT/email-wwwdown.tmp
+	echo "" >> $SCRIPT/email-wwwdown.tmp
+	echo "Da questo test e' risultato che in data:" >> $SCRIPT/email-wwwdown.tmp
+	echo "" >> $SCRIPT/email-wwwdown.tmp
+	echo "`date`" >> $SCRIPT/email-wwwdown.tmp
+	echo "" >> $SCRIPT/email-wwwdown.tmp
+	echo "il link al sito WEB: www.logd.it" >> $SCRIPT/email-wwwdown.tmp
+	echo "" >> $SCRIPT/email-wwwdown.tmp
+	echo "non e' stato piu' raggiungibile." >> $SCRIPT/email-wwwdown.tmp
+	echo "Questo link si trova in INET, ed e' gestito dall'AMI Informatica." >> $SCRIPT/email-wwwdown.tmp
+	echo "" >> $SCRIPT/email-wwwdown.tmp
+	echo "Verificate dunque questa cosa." >> $SCRIPT/email-wwwdown.tmp
+	echo "" >> $SCRIPT/email-wwwdown.tmp
+	echo "Grazie" >> $SCRIPT/email-wwwdown.tmp
+	mail -s "LINK DOWN - www.logd.it non disponibile" email1@domain-test.it < $SCRIPT/email-wwwdown.tmp
+	mail -s "LINK DOWN - www.logd.it non disponibile" email2@domain-test.it < $SCRIPT/email-wwwdown.tmp
+	mail -s "LINK DOWN - www.logd.it non disponibile" email3@domain-test.it < $SCRIPT/email-wwwdown.tmp
+	rm $SCRIPT/email-wwwdown.tmp
+}
+
+send_wwwup ()
+{
+	echo "Questa email viene recapitata in modo automatico dalla postazione linux che testa i link principali della Laziale." >> $SCRIPT/email-wwwup.tmp
+	echo "Il vostro indirizzo e' presente nello script /windows/script/test-link che e' in esecuzione sulla stessa macchina Linux." >> $SCRIPT/email-wwwup.tmp
+	echo "" >> $SCRIPT/email-wwwup.tmp
+	echo "Da questo test e' risultato che in data:" >> $SCRIPT/email-wwwup.tmp
+	echo "" >> $SCRIPT/email-wwwup.tmp
+	echo "`date`" >> $SCRIPT/email-wwwup.tmp
+	echo "" >> $SCRIPT/email-wwwup.tmp
+	echo "il link al sito WEB: www.logd.it" >> $SCRIPT/email-wwwup.tmp
+	echo "" >> $SCRIPT/email-wwwup.tmp
+	echo "e' tornato di nuovo raggiungibile." >> $SCRIPT/email-wwwup.tmp
+	echo "" >> $SCRIPT/email-wwwup.tmp
+	echo "Verificate dunque che e' di nuovo tutto OK." >> $SCRIPT/email-wwwup.tmp
+	echo "" >> $SCRIPT/email-wwwup.tmp
+	echo "Grazie" >> $SCRIPT/email-wwwup.tmp
+	mail -s "LINK UP - www.logd.it e' tornato disponibile" email1@domain-test.it < $SCRIPT/email-wwwup.tmp
+	mail -s "LINK UP - www.logd.it e' tornato disponibile" email2@domain-test.it < $SCRIPT/email-wwwup.tmp
+	mail -s "LINK UP - www.logd.it e' tornato disponibile" email3@domain-test.it < $SCRIPT/email-wwwup.tmp
+	rm $SCRIPT/email-wwwup.tmp
+}
+
+send_httpsdown ()
+{
+	echo "Questa email viene recapitata in modo automatico dalla postazione linux che testa i link principali della Laziale." >> $SCRIPT/email-httpsdown.tmp
+	echo "Il vostro indirizzo e' presente nello script /windows/script/test-link che e' in esecuzione sulla stessa macchina Linux." >> $SCRIPT/email-httpsdown.tmp
+	echo "" >> $SCRIPT/email-httpsdown.tmp
+	echo "Da questo test e' risultato che in data:" >> $SCRIPT/email-httpsdown.tmp
+	echo "" >> $SCRIPT/email-httpsdown.tmp
+	echo "`date`" >> $SCRIPT/email-httpsdown.tmp
+	echo "" >> $SCRIPT/email-httpsdown.tmp
+	echo "il link al sito WEB: https://secure.logd.it/secure/corriere" >> $SCRIPT/email-httpsdown.tmp
+	echo "" >> $SCRIPT/email-httpsdown.tmp
+	echo "non e' stato piu' raggiungibile." >> $SCRIPT/email-httpsdown.tmp
+	echo "Questo link si trova in INET, ed e' gestito dall'AMI Informatica." >> $SCRIPT/email-httpsdown.tmp
+	echo "In questo modo, anche se funionasse il sito WEB www.logd.it, i nostri clienti/foritori non potrebbero comunque accedere all'Area Riservata e quindi all'AS400." >> $SCRIPT/email-httpsdown.tmp
+	echo "Potrebbe dipendere sia da noi che da AMI (verificare lan-to-lan tra LD e AMI, e gli automatismi tra sito WEB e AS400)." >> $SCRIPT/email-httpsdown.tmp
+	echo "Verificate dunque questa cosa." >> $SCRIPT/email-httpsdown.tmp
+	echo "" >> $SCRIPT/email-httpsdown.tmp
+	echo "Grazie" >> $SCRIPT/email-httpsdown.tmp
+	mail -s "LINK DOWN - https://secure.logd.it/secure/corriere non disponibile" email1@domain-test.it < $SCRIPT/email-httpsdown.tmp
+	mail -s "LINK DOWN - https://secure.logd.it/secure/corriere non disponibile" email2@domain-test.it < $SCRIPT/email-httpsdown.tmp
+	mail -s "LINK DOWN - https://secure.logd.it/secure/corriere non disponibile" email3@domain-test.it < $SCRIPT/email-httpsdown.tmp
+	rm $SCRIPT/email-httpsdown.tmp
+}
+
+send_httpsup ()
+{
+	echo "Questa email viene recapitata in modo automatico dalla postazione linux che testa i link principali della Laziale." >> $SCRIPT/email-httpsup.tmp
+	echo "Il vostro indirizzo e' presente nello script /windows/script/test-link che e' in esecuzione sulla stessa macchina Linux." >> $SCRIPT/email-httpsup.tmp
+	echo "" >> $SCRIPT/email-httpsup.tmp
+	echo "Da questo test e' risultato che in data:" >> $SCRIPT/email-httpsup.tmp
+	echo "" >> $SCRIPT/email-httpsup.tmp
+	echo "`date`" >> $SCRIPT/email-httpsup.tmp
+	echo "" >> $SCRIPT/email-httpsup.tmp
+	echo "il link al sito WEB: https://secure.logd.it/secure/corriere" >> $SCRIPT/email-httpsup.tmp
+	echo "" >> $SCRIPT/email-httpsup.tmp
+	echo "e' tornato di nuovo raggiungibile." >> $SCRIPT/email-httpsup.tmp
+	echo "" >> $SCRIPT/email-httpsup.tmp
+	echo "Verificate dunque che e' di nuovo tutto OK." >> $SCRIPT/email-httpsup.tmp
+	echo "" >> $SCRIPT/email-httpsup.tmp
+	echo "Grazie" >> $SCRIPT/email-httpsup.tmp
+	mail -s "LINK UP - https://secure.logd.it/secure/corriere e' tornato disponibile" email1@domain-test.it < $SCRIPT/email-httpsup.tmp
+	mail -s "LINK UP - https://secure.logd.it/secure/corriere e' tornato disponibile" email2@domain-test.it < $SCRIPT/email-httpsup.tmp
+	mail -s "LINK UP - https://secure.logd.it/secure/corriere e' tornato disponibile" email3@domain-test.it < $SCRIPT/email-httpsup.tmp
+	rm $SCRIPT/email-httpsup.tmp
+}
+
+echo
+echo "######################################"
+echo "# `date +%H:%M:%S` - Starting test-link v$VERSION #"
+echo "######################################"
+
+echo >> /windows/log-nolink/`date +%Y%m%d`
+echo "######################################" >> /windows/log-nolink/`date +%Y%m%d`
+echo "# `date +%H:%M:%S` - Starting test-link v$VERSION #" >> /windows/log-nolink/`date +%Y%m%d`
+echo "######################################" >> /windows/log-nolink/`date +%Y%m%d`
+
+while :
+do
+	LOGFILE=/windows/log-nolink/`date +%Y%m%d`
+	FAILED=0
+	COUNT=0
+	LINE=0
+	unset AIP
+	unset AHOST
+	i=/windows/IP-LINK.txt
+#	i=/windows/IP-TEST.txt
+	AIP=(`cat $i | grep -v "#" | awk '{ print $1 }'`)
+	AHOST=(`cat $i | grep -v "#" | awk '{ print $2 }'`)
+	
+	echo "Sotto test il file $i"
+	LINE=`cat $i | grep -v "#" | wc -l`
+
+	while (( $LINE > 0 ))
+	do
+
+#		echo ${AFAIL[$COUNT]}
+		
+#		read
+		echo "ping -c1 ${AIP[$COUNT]} (${AHOST[$COUNT]})"
+		sleep 1
+#		ping -c1 ${AIP[$COUNT]}
+		ping -c1 ${AIP[$COUNT]}	1>/dev/null
+		
+		if [[ $? != 0 ]]
+		then
+			sleep 1
+			echo "ping -c3 ${AIP[$COUNT]} (${AHOST[$COUNT]})"
+			ping -c3 ${AIP[$COUNT]} 1>/dev/null
+			if [[ $? != 0 ]]
+			then
+				sleep 1
+				echo "ping -c1 ${AIP[$COUNT]} (${AHOST[$COUNT]})"
+				ping -c1 ${AIP[$COUNT]} 1>/dev/null
+			
+				if [[ $? != 0 ]]
+				then
+
+					FAILED=$(($FAILED+1))
+				
+					echo "`date +%H:%M:%S` - ${AIP[$COUNT]} (${AHOST[$COUNT]}) non raggiungibile"
+					echo "`date +%H:%M:%S` - ${AIP[$COUNT]} (${AHOST[$COUNT]}) non raggiungibile" >> $LOGFILE
+				
+#					echo ${AFAIL[$COUNT]}
+
+					if [[ ${AFAIL[$COUNT]} != 1 ]]
+					then
+					
+#						echo ${AFAIL[$COUNT]}
+						echo "`date +%H:%M:%S` - Invio email di fail..." >> $LOGFILE
+						send_linkdown
+						AFAIL[$COUNT]=1
+#						echo ${AFAIL[$COUNT]}
+	
+					fi
+				
+					play $SOUND/polizia.wav
+				
+				fi
+			fi
+							
+		else
+
+			if [[ ${AFAIL[$COUNT]} == 1 ]]
+			then
+				echo "`date +%H:%M:%S` - L'host ${AIP[$COUNT]} (${AHOST[$COUNT]}) e' tornato raggiungibile" >> $LOGFILE
+				echo "`date +%H:%M:%S` - Invio email di ripristino..." >> $LOGFILE
+				send_linkup
+			fi
+
+#			echo ${AFAIL[$COUNT]}
+			AFAIL[$COUNT]=0
+#			echo ${AFAIL[$COUNT]}
+
+		fi
+
+		COUNT=$(($COUNT+1))
+#		echo COUNT=$COUNT
+		LINE=$(($LINE-1))
+#		echo LINE=$LINE
+#		read
+		
+	done
+
+	echo "wget www.logd.it"
+	wget --timeout=5 -O wwwfile www.logd.it 2>/dev/null
+	if [[ $? != 0 ]]
+	then
+		sleep 3
+		echo "retry wget www.logd.it"
+		wget --timeout=5 -O wwwfile www.logd.it 2>/dev/null
+		if [[ $? != 0 ]]
+		then
+			FAILED=$(($FAILED+1))
+			echo "`date +%H:%M:%S` - www.logd.it non disponibile"
+			echo "`date +%H:%M:%S` - www.logd.it non disponibile" >> $LOGFILE
+			if [[ $NOWWW != 1 ]]
+			then
+				echo "`date +%H:%M:%S` - Invio email di fail..." >> $LOGFILE
+				send_wwwdown
+				NOWWW=1
+			fi
+				
+			play $SOUND/polizia.wav
+				
+		fi
+							
+	else
+		if [[ $NOWWW == 1 ]]
+		then
+			echo "`date +%H:%M:%S` - www.logd.it e' di nuovo raggiungibile"
+			echo "`date +%H:%M:%S` - www.logd.it e' di nuovo raggiungibile" >> $LOGFILE
+			echo "`date +%H:%M:%S` - Invio email di ripristino..." >> $LOGFILE
+			send_wwwup
+			NOWWW=0
+		fi
+		rm wwwfile
+	fi
+
+	echo "wget https://secure.logd.it/secure/corriere"
+	wget --timeout=5 -O httpsfile https://secure.logd.it/secure/corriere --no-check-certificate 2>/dev/null
+	if [[ $? != 0 ]]
+	then
+		sleep 3
+		echo "retry wget https://secure.logd.it/secure/corriere"
+		wget --timeout=5 -O httpsfile https://secure.logd.it/secure/corriere --no-check-certificate 2>/dev/null
+		if [[ $? != 0 ]]
+		then
+			FAILED=$(($FAILED+1))
+			echo "`date +%H:%M:%S` - https://secure.logd.it/secure/corriere non disponibile"
+			echo "`date +%H:%M:%S` - https://secure.logd.it/secure/corriere non disponibile" >> $LOGFILE
+			if [[ $NOHTTPS != 1 ]]
+			then
+				echo "`date +%H:%M:%S` - Invio email di fail..." >> $LOGFILE
+				send_httpsdown
+				NOHTTPS=1
+			fi
+				
+			play $SOUND/polizia.wav
+				
+		fi
+							
+	else
+		if [[ $NOHTTPS == 1 ]]
+		then
+			echo "`date +%H:%M:%S` - https://secure.logd.it/secure/corriere e' di nuovo raggiungibile"
+			echo "`date +%H:%M:%S` - https://secure.logd.it/secure/corriere e' di nuovo raggiungibile" >> $LOGFILE
+			echo "`date +%H:%M:%S` - Invio email di ripristino..." >> $LOGFILE
+			send_httpsup
+			NOHTTPS=0
+		fi
+		rm httpsfile
+	fi
+	TOT=$(($TOT+1))
+	echo
+	echo "`date`"
+	echo "Tutti gli IP presenti nel file: $i"
+	echo
+	echo "sono stati testati N. $TOT volte"
+	echo "trovando N. $FAILED IP non raggiungibili nell'ultimo ciclo"
+	echo "`date +%H:%M:%S` - tutti gli IP di $i sono stati testati N. $TOT volte consecutivamente" >> $LOGFILE
+	echo "e sono stati trovati N. $FAILED IP non raggiungibili in questo ultimo ciclo" >> $LOGFILE
+	echo "`date` - fine ciclo" >> $LOGFILE
+	echo
+	echo >> $LOGFILE
+		
+	sleep 1
+		
+done
